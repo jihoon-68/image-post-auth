@@ -81,10 +81,14 @@ export const deletePost = (id, password) => {
     });
 };
 
-export const loginUser = (username, password) => {
+export const loginUser = (username, password, rememberMe = false) => {
     const params = new URLSearchParams();
     params.append('username', username);
     params.append('password', password);
+
+    if(rememberMe){
+        params.append('remember-me', 'true');
+    }
 
     return apiClient.post('/login', params, {
         baseURL: '/api',

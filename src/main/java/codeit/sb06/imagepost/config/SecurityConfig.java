@@ -18,15 +18,24 @@ import org.springframework.security.config.annotation.web.configurers.SessionMan
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
+
+import javax.sql.DataSource;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final DataSource dataSource;
+
+    private final UserDetailsService userDetailsService;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -41,6 +50,13 @@ public class SecurityConfig {
                         .failureHandler(new RestAuthenticationFailureHandler())
                         .permitAll()
                 )
+                .rememberMe( rememberMe -> rememberMe
+                                .key("my-secure-key-1234")
+                                .tokenValiditySeconds(60*60*24*30)
+                                .rememberMeParameter("remember-me")
+                                .userDetailsService(userDetailsService)
+                                .tokenRepository(tokenRepository())
+                        )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                         .invalidSessionStrategy(new ApiInvalidSessionStrategy())
@@ -93,5 +109,12 @@ public class SecurityConfig {
     @Bean
     public HttpSessionEventPublisher httpSessionEventPublisher() {
         return new HttpSessionEventPublisher();
+    }
+
+    @Bean
+    public PersistentTokenRepository tokenRepository() {
+        JdbcTokenRepositoryImpl repo = new JdbcTokenRepositoryImpl();
+        repo.setDataSource(dataSource);
+        return repo;
     }
 }

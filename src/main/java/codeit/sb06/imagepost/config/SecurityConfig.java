@@ -3,6 +3,7 @@ package codeit.sb06.imagepost.config;
 import codeit.sb06.imagepost.entity.Member;
 import codeit.sb06.imagepost.entity.Role;
 import codeit.sb06.imagepost.repository.MemberRepository;
+import codeit.sb06.imagepost.security.ApiInvalidSessionStrategy;
 import codeit.sb06.imagepost.security.RestAuthenticationFailureHandler;
 import codeit.sb06.imagepost.security.RestAuthenticationSuccessHandler;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -38,10 +40,14 @@ public class SecurityConfig {
                         .permitAll()
                 )
                 .sessionManagement(session -> session
-                        .maximumSessions(1)
-                        .maxSessionsPreventsLogin(false)
-                        .expiredUrl("/app/login?expired")
-                        .sessionRegistry(sessionRegistry())
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                        .invalidSessionStrategy(new ApiInvalidSessionStrategy())
+                        .sessionConcurrency(concurrency -> concurrency
+                                .maximumSessions(1)
+                                .maxSessionsPreventsLogin(false)
+                                .expiredUrl("/api/login?expired")
+                                .sessionRegistry(sessionRegistry())
+                        )
                 )
                 .logout(logout -> logout
                         .logoutUrl("/api/logout")

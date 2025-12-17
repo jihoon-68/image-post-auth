@@ -32,6 +32,7 @@ management:
 server:
   servlet:
     session:
-      timeout: 1m  # 테스트용 1m초 (실무 권장: 30m)
+      timeout: 2m  # 테스트용 1m (실무 권장: 30m)
+      tracking-modes: cookie
       cookie:
         max-age: 1m # 쿠키 수명도 동일하게 맞춤 (선택사항)

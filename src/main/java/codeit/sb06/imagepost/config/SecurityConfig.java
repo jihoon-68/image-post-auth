@@ -4,6 +4,7 @@ import codeit.sb06.imagepost.entity.Member;
 import codeit.sb06.imagepost.entity.Role;
 import codeit.sb06.imagepost.repository.MemberRepository;
 import codeit.sb06.imagepost.security.ApiInvalidSessionStrategy;
+import codeit.sb06.imagepost.security.ApiSessionExpiredStrategy;
 import codeit.sb06.imagepost.security.RestAuthenticationFailureHandler;
 import codeit.sb06.imagepost.security.RestAuthenticationSuccessHandler;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.SessionManagementConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
@@ -42,11 +44,12 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                         .invalidSessionStrategy(new ApiInvalidSessionStrategy())
+                        .sessionFixation(SessionManagementConfigurer.SessionFixationConfigurer::changeSessionId)
                         .sessionConcurrency(concurrency -> concurrency
                                 .maximumSessions(1)
                                 .maxSessionsPreventsLogin(false)
-                                .expiredUrl("/api/login?expired")
                                 .sessionRegistry(sessionRegistry())
+                                .expiredSessionStrategy(new ApiSessionExpiredStrategy())
                         )
                 )
                 .logout(logout -> logout
